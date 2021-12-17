@@ -1,0 +1,56 @@
+plugins {
+    id "com.github.johnrengelman.shadow" version "7.0.0" apply false
+    id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+subprojects {
+    apply plugin: 'java-library'
+    apply plugin: 'maven-publish'
+    apply plugin: 'java'
+
+    java.toolchain.languageVersion = JavaLanguageVersion.of(project.java_version)
+    java.withSourcesJar()
+    java.withJavadocJar()
+
+    tasks.withType(JavaCompile).configureEach {
+        it.options.encoding = 'UTF-8'
+        it.options.release = project.java_version as int
+    }
+
+    repositories {
+        mavenCentral()
+
+        maven {
+            name = 'Sponge'
+            url = 'https://repo.spongepowered.org/repository/maven-public/'
+        }
+    }
+
+    manifest {
+        attributes([
+                "Specification-Title"     : project.mod_id,
+                "Specification-Vendor": project.mod_authors,
+                "Specification-Version"   : "1", // We are version 1 of ourselves
+                "Implementation-Title"    : project.name,
+                "Implementation-Version"  : project.version,
+                "Implementation-Vendor": project.mod_authors,
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+    }
+
+}
+
+configure(subprojects - project(":common")) {
+    publishing {
+        // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+        repositories {
+            // Add repositories to publish to here.
+            // Notice: This block does NOT have the same function as the block in the top level.
+            // The repositories here will be used for publishing your artifact, not for
+            // retrieving dependencies.
+        }
+    }
+}
